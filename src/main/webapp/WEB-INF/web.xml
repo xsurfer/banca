@@ -5,6 +5,16 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
          metadata-complete="false">
+         
+        <context-param>
+			<param-name>resteasy.servlet.mapping.prefix</param-name>
+			<param-value>/rest</param-value>
+		</context-param>
+		
+		<context-param>
+			<param-name>resteasy.scan</param-name>
+			<param-value>true</param-value>
+		</context-param>
 
          <servlet>
                   <servlet-name>health</servlet-name>
@@ -14,6 +24,18 @@
                   <servlet-name>health</servlet-name>
                   <url-pattern>/health</url-pattern>
          </servlet-mapping>
+         
+         <servlet>
+		 		<servlet-name>resteasy-servlet</servlet-name>
+				<servlet-class>
+					org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher
+				</servlet-class>
+		</servlet>
+		
+		<servlet-mapping>
+			<servlet-name>resteasy-servlet</servlet-name>
+			<url-pattern>/rest/*</url-pattern>
+		</servlet-mapping>
          
 </web-app>
 
