@@ -18,6 +18,50 @@ import org.hibernate.Transaction;
 @Path("/")
 public class BancaServiceImpl implements BancaService {
 
+	public BancaServiceImpl(){
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		Transaction tx = null;
+		try {
+			tx = session.beginTransaction();		
+			@SuppressWarnings("unchecked")
+			List<Account> account =  session.createQuery("from Account as account")
+				.list();
+			if(account.size()==0){
+				Account tmp = new Account();
+				tmp.setName("Fabio");
+				tmp.setSurname("Perfetti");
+				tmp.setBalance(500.0);
+				CreditCard cc = new CreditCard();
+				cc.setAccount(tmp);
+				cc.setCardNumber("1234567812345678");
+				cc.setCircuit("visa");
+				cc.setCvv("123");
+				tmp.getCards().add(cc);
+				
+				CreditCard cc2 = new CreditCard();
+				cc2.setAccount(tmp);
+				cc2.setCardNumber("9234567812345679");
+				cc2.setCircuit("mastercard");
+				cc2.setCvv("456");
+				tmp.getCards().add(cc2);
+				
+				session.persist(tmp);
+				session.persist(cc);
+				session.persist(cc2);
+			}			
+			tx.commit();
+		}
+		catch (Exception e) {
+			if (tx != null) tx.rollback();
+			e.printStackTrace();
+		}
+		finally {
+			session.close();
+		}
+
+		
+	}
+	
 	@Override
 	@GET
 	@Produces("application/json")
