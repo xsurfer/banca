@@ -6,15 +6,15 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
-@Path("/")
+@Path("/bank")
 public class BancaServiceImpl implements BancaService {
 
 	@Override
 	@GET
 	@Produces("text/plain")
+	@Path("/simple")
 	public Response get() {
-		// TODO Auto-generated method stub
-		return null;
+		return Response.status(200).entity("Ciao Mondo").build();
 	}
 
 	@Override
