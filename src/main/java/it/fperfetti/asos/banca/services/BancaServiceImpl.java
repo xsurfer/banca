@@ -1,31 +1,111 @@
 package it.fperfetti.asos.banca.services;
 
+import it.fperfetti.asos.banca.model.Account;
+import it.fperfetti.asos.banca.model.CreditCard;
+import it.fperfetti.asos.banca.model.Withdrawal;
+import it.fperfetti.asos.banca.util.HibernateUtil;
+
+import java.util.Date;
+import java.util.List;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 
-@Path("/bank")
+@Path("/")
 public class BancaServiceImpl implements BancaService {
 
 	@Override
 	@GET
-	@Produces("text/plain")
-	@Path("/simple")
-	public Response get() {
-		return Response.status(200).entity("Ciao Mondo").build();
+	@Produces("application/json")
+	@Path("/check/{cardnumber}/{cvv}/{owner_name}/{owner_surname}")
+	public Long isValid(
+			@PathParam("cardnumber") String cardnumber,
+			@PathParam("cvv") String cvv,
+			@PathParam("owner_name") String owner_name, 
+			@PathParam("owner_surname") String owner_surname) {
+
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		Transaction tx = null;
+		Long accountID = new Long(-1);
+		try {
+			tx = session.beginTransaction();		
+			@SuppressWarnings("unchecked")
+			List<CreditCard> cards =  session.createQuery("from CreditCard as card where card.cardNumber = :cardnumber")
+			.setString("cardnumber", cardnumber)
+			.list();
+			if(cards.size()>1){
+				throw new Exception("More than one card with that number!");
+			}
+			else if(cards.size()==1){
+				CreditCard card = cards.get(0);
+				if(cvv.compareTo(card.getCvv())==0){
+					Account account = card.getAccount();
+					if(account.getName().compareToIgnoreCase(owner_name)==0 && account.getSurname().compareToIgnoreCase(owner_surname)==0){
+						accountID = account.getId();
+					}
+					else{
+						throw new Exception("Wrong owner");
+					}
+				}
+				else {
+					throw new Exception("Wrong cvv");
+				}
+			}			
+			tx.commit();
+		}
+		catch (Exception e) {
+			if (tx != null) tx.rollback();
+			e.printStackTrace();
+		}
+		finally {
+			session.close();
+		}
+		return accountID;
 	}
 
 	@Override
 	@GET
-	@Path("/{param}")
-	public Response printMessage(@PathParam("param") String msg) {
- 
-		String result = "Restful example : " + msg;
- 
-		return Response.status(200).entity(result).build();
- 
+	@Produces("application/json")
+	@Path("/withdrawal/{vendor}/{id}/{amount}")
+	public Boolean withdrawal(
+			@PathParam("vendor") String vendor,
+			@PathParam("id") Long accountId,
+			@PathParam("amount") Double amount) {
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		Transaction tx = null;
+		Boolean ret = false;
+		try {
+			tx = session.beginTransaction();		
+			Account account =  (Account) session.get(Account.class, accountId);
+			if(account==null){
+				throw new Exception("Account doesn't exist!");
+			}
+			else if(account.getBalance()>=amount){
+				Withdrawal withdrawal = new Withdrawal();
+				withdrawal.setAccount(account);
+				withdrawal.setAmount(amount);
+				withdrawal.setDate(new Date());
+				withdrawal.setVendor(vendor);
+				session.persist(withdrawal);
+				account.setBalance(account.getBalance()-amount);
+			}		
+			tx.commit();
+			ret = true;
+		}
+		catch (Exception e) {
+			if (tx != null) tx.rollback();
+			e.printStackTrace();
+		}
+		finally {
+			session.close();
+		}
+
+		return ret;
 	}
+
 
 }
