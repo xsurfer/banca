@@ -136,6 +136,8 @@ public class BancaServiceImpl implements BancaService {
 				withdrawal.setVendor(vendor);
 				session.persist(withdrawal);
 				account.setBalance(account.getBalance()-amount);
+			} else{
+				throw new Exception("Not enough money");
 			}		
 			tx.commit();
 			ret = true;
