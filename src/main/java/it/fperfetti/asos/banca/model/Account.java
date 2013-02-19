@@ -34,7 +34,7 @@ public class Account {
 	public Double getBalance() { return balance; }
 	public void setBalance(Double balance) { this.balance = balance; }
 	
-	@OneToMany
+	@OneToMany(mappedBy = "account")
 	private List<CreditCard> cards = new ArrayList<CreditCard>();
 	public List<CreditCard> getCards() { return cards; }
 	public void setCards(List<CreditCard> cards) { this.cards = cards; }
