@@ -16,12 +16,6 @@
 			<param-value>/rest</param-value>
 		</context-param>
 				
-		<listener>
-			<listener-class>
-				org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap
-			</listener-class>
-		</listener>
-
          <servlet>
                   <servlet-name>health</servlet-name>
                   <jsp-file>/health.jsp</jsp-file>
