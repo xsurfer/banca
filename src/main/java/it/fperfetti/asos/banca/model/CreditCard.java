@@ -18,6 +18,7 @@ public class CreditCard {
 	public void setId(Long id) { this.id = id; }
 	
 	@ManyToOne
+	@JoinColumn(name="account_id")
 	private Account account;
 	public Account getAccount() { return account; }
 	public void setAccount(Account account) { this.account = account; }
